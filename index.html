@@ -7,294 +7,277 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --navy-blue: #001f3f;
-            --tab-active: #ffffff;
+            --navy: #001f3f;
             --tab-inactive: #003366;
+            --tab-active: #f8fafc;
         }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
-
-        /* Barra Superior */
+        body { background-color: #e2e8f0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Barra Superior Azul Marino */
         .navbar {
-            background-color: var(--navy-blue);
-            height: 60px;
+            background-color: var(--navy);
+            height: 70px;
             display: flex;
             align-items: center;
             padding: 0 20px;
             color: white;
-            position: relative;
-            z-index: 100;
+            z-index: 50;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
-        .logo {
-            height: 40px;
-            margin-right: 15px;
-        }
+        .brand-zone { display: flex; align-items: center; min-width: 300px; }
+        .logo { height: 50px; margin-right: 15px; }
 
-        .brand-title {
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-right: 30px;
-            white-space: nowrap;
-        }
-
-        /* Sistema de Pestañas Solapadas */
-        .tabs-container {
+        /* Pestañas Solapadas Estilo Carpeta */
+        .tabs-wrapper {
             display: flex;
             align-items: flex-end;
             height: 100%;
-            overflow-x: auto;
+            flex-grow: 1;
+            justify-content: flex-end;
+            padding-right: 20px;
         }
-
         .tab {
-            background-color: var(--tab-inactive);
-            color: #ccc;
-            padding: 8px 20px;
-            margin-right: -10px; /* Solapado */
-            border-radius: 10px 10px 0 0;
+            background: var(--tab-inactive);
+            color: #94a3b8;
+            padding: 10px 30px;
+            margin-right: -15px; /* Solapado */
             cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s;
-            white-space: nowrap;
+            transition: all 0.3s ease;
             position: relative;
-            z-index: 1;
+            white-space: nowrap;
+            clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-
         .tab.active {
-            background-color: var(--tab-active);
-            color: var(--navy-blue);
-            z-index: 5;
+            background: var(--tab-active);
+            color: var(--navy);
+            z-index: 10;
             font-weight: bold;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+        }
+        .tab:hover:not(.active) {
+            background: #004080;
+            color: white;
+            z-index: 5;
         }
 
-        /* Contenido */
-        #main-frame {
-            width: 100%;
-            height: calc(100vh - 60px);
-            border: none;
-        }
+        /* Contenedor de la página cargada */
+        #main-viewport { width: 100%; flex-grow: 1; border: none; background: white; }
 
-        /* Login Overlay */
-        #login-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .admin-panel {
-            position: absolute;
-            top: 70px;
-            right: 20px;
-            background: white;
-            color: black;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            display: none;
-            z-index: 200;
-            max-height: 80vh;
-            overflow-y: auto;
-            width: 350px;
-        }
+        /* Modales */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
     </style>
 </head>
 <body>
 
-    <!-- BARRA SUPERIOR -->
+    <!-- NAVBAR -->
     <nav class="navbar">
-        <img src="logo.png" alt="Logo" class="logo" onerror="this.src='https://via.placeholder.com/40?text=RF'">
-        <div class="brand-title">Residencial Francia | Panel administrativo</div>
-        
-        <div id="tabs" class="tabs-container">
-            <!-- Las pestañas se cargan aquí dinámicamente -->
+        <div class="brand-zone">
+            <img src="logo.png" alt="Logo" class="logo" onerror="this.src='https://via.placeholder.com/50?text=RF'">
+            <div class="flex flex-col">
+                <span class="font-bold text-xl tracking-wide">Residencial Francia</span>
+                <span class="text-xs uppercase text-blue-300 tracking-tighter">Panel administrativo</span>
+            </div>
         </div>
 
-        <div class="ml-auto flex items-center">
-            <button id="admin-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm hidden">⚙️ Config</button>
-            <button onclick="logout()" class="ml-4 text-sm text-gray-300 hover:text-white">Cerrar Sesión</button>
+        <div id="tabs-container" class="tabs-wrapper">
+            <!-- Pestañas cargadas por JS -->
+        </div>
+
+        <div class="flex items-center gap-4 border-l border-blue-800 pl-4">
+            <button id="btn-admin" class="hidden bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1 rounded text-xs font-bold transition">ADMIN</button>
+            <button id="btn-logout" class="text-xs text-gray-400 hover:text-white uppercase tracking-widest">Salir</button>
         </div>
     </nav>
 
-    <!-- IFRAME DE CONTENIDO -->
-    <div id="content">
-        <iframe id="main-frame" src=""></iframe>
-    </div>
+    <!-- IFRAME (Aquí se verán los links) -->
+    <iframe id="main-viewport" src="about:blank"></iframe>
 
-    <!-- PANTALLA DE LOGIN -->
-    <div id="login-overlay">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-96">
-            <h2 class="text-2xl font-bold mb-4 text-center">Acceso Residencial Francia</h2>
-            <input type="text" id="username" placeholder="Usuario" class="w-full p-2 mb-3 border rounded">
-            <input type="password" id="password" placeholder="Contraseña" class="w-full p-2 mb-4 border rounded">
-            <button onclick="attemptLogin()" class="w-full bg-blue-900 text-white py-2 rounded font-bold">Entrar</button>
-            <p id="login-error" class="text-red-500 text-sm mt-2 hidden">Credenciales incorrectas</p>
+    <!-- LOGIN MODAL -->
+    <div id="login-modal" class="modal active">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-96">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-black text-gray-800">ACCESO</h2>
+                <p class="text-gray-500 text-sm">Residencial Francia</p>
+            </div>
+            <div class="space-y-4">
+                <input type="email" id="login-email" placeholder="Usuario (Email)" class="w-full p-3 bg-gray-100 border-none rounded-lg focus:ring-2 focus:ring-blue-900 outline-none">
+                <input type="password" id="login-pass" placeholder="Contraseña" class="w-full p-3 bg-gray-100 border-none rounded-lg focus:ring-2 focus:ring-blue-900 outline-none">
+                <button id="btn-do-login" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-black transition duration-300">Entrar al Panel</button>
+            </div>
+            <p id="login-error" class="text-red-500 text-xs mt-4 text-center hidden">Datos incorrectos o sin acceso.</p>
         </div>
     </div>
 
-    <!-- PANEL ADMINISTRADOR (MODAL) -->
-    <div id="admin-modal" class="admin-panel">
-        <h3 class="text-xl font-bold mb-4 border-b pb-2">Configuración</h3>
-        
-        <div class="mb-6">
-            <h4 class="font-bold text-sm text-blue-800">Crear/Editar Usuario</h4>
-            <input type="text" id="new-user-name" placeholder="Nombre de usuario" class="w-full p-1 border mt-1 text-sm">
-            <input type="text" id="new-user-pass" placeholder="Contraseña" class="w-full p-1 border mt-1 text-sm">
-            <p class="text-xs text-gray-500 mt-1">* Si dejas pass vacío, entrará sin contraseña.</p>
-            <button onclick="saveUser()" class="bg-green-600 text-white px-4 py-1 rounded mt-2 text-sm w-full">Guardar Usuario</button>
-        </div>
+    <!-- PANEL ADMIN (MODAL) -->
+    <div id="admin-modal" class="modal">
+        <div class="bg-white p-6 rounded-xl w-full max-w-3xl max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <h2 class="text-2xl font-bold text-navy">Gestión de Usuarios y Links</h2>
+                <button onclick="closeAdmin()" class="text-gray-400 hover:text-black text-3xl">&times;</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Columna Izquierda: Crear Usuario -->
+                <div class="bg-gray-50 p-4 rounded-lg border">
+                    <h3 class="font-bold mb-3 text-blue-900">Nuevo Usuario</h3>
+                    <input type="email" id="new-email" placeholder="Email del usuario" class="w-full p-2 mb-2 border rounded">
+                    <input type="password" id="new-pass" placeholder="Contraseña" class="w-full p-2 mb-2 border rounded">
+                    <select id="new-role" class="w-full p-2 mb-4 border rounded text-sm">
+                        <option value="user">Usuario Común</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                    <button id="btn-create-user" class="w-full bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">Registrar en DB</button>
+                </div>
 
-        <div class="mb-4">
-            <h4 class="font-bold text-sm text-blue-800">Asignar Link a Usuario</h4>
-            <select id="user-select" class="w-full p-1 border mt-1 text-sm"></select>
-            <input type="text" id="link-title" placeholder="Título de la pestaña" class="w-full p-1 border mt-1 text-sm">
-            <input type="text" id="link-url" placeholder="https://ejemplo.com" class="w-full p-1 border mt-1 text-sm">
-            <button onclick="addLink()" class="bg-blue-600 text-white px-4 py-1 rounded mt-2 text-sm w-full">Agregar Link</button>
-        </div>
+                <!-- Columna Derecha: Asignar Links -->
+                <div class="bg-gray-50 p-4 rounded-lg border">
+                    <h3 class="font-bold mb-3 text-blue-900">Asignar Pestaña / Link</h3>
+                    <select id="select-user-link" class="w-full p-2 mb-2 border rounded text-sm">
+                        <!-- Cargado por JS -->
+                    </select>
+                    <input type="text" id="link-title" placeholder="Nombre de la pestaña (ej: Reportes)" class="w-full p-2 mb-2 border rounded">
+                    <input type="text" id="link-url" placeholder="URL (https://...)" class="w-full p-2 mb-4 border rounded">
+                    <button id="btn-add-link" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Agregar Pestaña</button>
+                </div>
+            </div>
 
-        <hr class="my-4">
-        <button onclick="toggleAdminPanel()" class="w-full bg-gray-500 text-white py-1 rounded">Cerrar</button>
+            <div id="admin-users-list" class="mt-8 space-y-2">
+                <!-- Lista de usuarios registrados -->
+            </div>
+        </div>
     </div>
 
-    <script>
-        // BASE DE DATOS INICIAL (Se guarda en el navegador del administrador)
-        let db = JSON.parse(localStorage.getItem('residencial_db')) || {
-            users: {
-                "admin": { password: "123", role: "admin", links: [] },
-                "usuario1": { password: "456", role: "user", links: [{ title: "Google", url: "https://www.bing.com" }] }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+
+        // CONFIGURACIÓN PROPORCIONADA
+        const firebaseConfig = {
+            apiKey: "AIzaSyA7K_apgqcaH7Py2YhJoFt8rGXhpqk1QUk",
+            authDomain: "prueba-1-6987a.firebaseapp.com",
+            databaseURL: "https://prueba-1-6987a-default-rtdb.firebaseio.com",
+            projectId: "prueba-1-6987a",
+            storageBucket: "prueba-1-6987a.firebasestorage.app",
+            messagingSenderId: "447271440532",
+            appId: "1:447271440532:web:503ef4184ea50ee96f2481",
+            measurementId: "G-FF33QD461T"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let userData = null;
+
+        // LOGIN
+        document.getElementById('btn-do-login').onclick = async () => {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (e) {
+                const err = document.getElementById('login-error');
+                err.classList.remove('hidden');
+                setTimeout(() => err.classList.add('hidden'), 3000);
             }
         };
 
-        let currentUser = null;
+        document.getElementById('btn-logout').onclick = () => signOut(auth);
 
-        // Función para guardar en LocalStorage
-        function syncDB() {
-            localStorage.setItem('residencial_db', JSON.stringify(db));
-            updateUserSelect();
-        }
-
-        // LOGIN
-        function attemptLogin() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-
-            if (db.users[user]) {
-                // Verificar si requiere contraseña o si coincide
-                if (db.users[user].password === "" || db.users[user].password === pass) {
-                    currentUser = user;
-                    loginSuccess();
+        // OBSERVAR USUARIO
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                    document.getElementById('login-modal').classList.remove('active');
+                    if (userData.role === 'admin') document.getElementById('btn-admin').classList.remove('hidden');
+                    renderTabs(userData.links || []);
                 } else {
-                    showError();
+                    alert("Usuario autenticado pero no configurado en Firestore.");
                 }
             } else {
-                showError();
+                document.getElementById('login-modal').classList.add('active');
+                document.getElementById('btn-admin').classList.add('hidden');
+                document.getElementById('tabs-container').innerHTML = '';
+                document.getElementById('main-viewport').src = 'about:blank';
             }
-        }
+        });
 
-        function loginSuccess() {
-            document.getElementById('login-overlay').style.display = 'none';
-            if (db.users[currentUser].role === 'admin') {
-                document.getElementById('admin-btn').classList.remove('hidden');
-            }
-            renderTabs();
-            updateUserSelect();
-        }
-
-        function showError() {
-            const err = document.getElementById('login-error');
-            err.classList.remove('hidden');
-            setTimeout(() => err.classList.add('hidden'), 3000);
-        }
-
-        function logout() {
-            location.reload();
-        }
-
-        // RENDERIZADO DE PESTAÑAS
-        function renderTabs() {
-            const container = document.getElementById('tabs');
+        // RENDERIZADO DE PESTAÑAS SOLAPADAS
+        function renderTabs(links) {
+            const container = document.getElementById('tabs-container');
             container.innerHTML = '';
             
-            const userLinks = db.users[currentUser].links || [];
-            
-            userLinks.forEach((link, index) => {
+            links.forEach((link, i) => {
                 const tab = document.createElement('div');
-                tab.className = `tab ${index === 0 ? 'active' : ''}`;
+                tab.className = `tab ${i === 0 ? 'active' : ''}`;
                 tab.innerText = link.title;
                 tab.onclick = () => {
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
-                    loadPage(link.url);
+                    document.getElementById('main-viewport').src = link.url;
                 };
                 container.appendChild(tab);
             });
 
-            if (userLinks.length > 0) loadPage(userLinks[0].url);
+            if (links.length > 0) document.getElementById('main-viewport').src = links[0].url;
         }
 
-        function loadPage(url) {
-            // Nota: Algunos sitios bloquean ser mostrados en iframes por seguridad (X-Frame-Options)
-            document.getElementById('main-frame').src = url;
+        // PANEL ADMINISTRADOR
+        document.getElementById('btn-admin').onclick = () => {
+            document.getElementById('admin-modal').classList.add('active');
+            loadAdminData();
+        };
+
+        window.closeAdmin = () => document.getElementById('admin-modal').classList.remove('active');
+
+        function loadAdminData() {
+            onSnapshot(collection(db, "users"), (snapshot) => {
+                const select = document.getElementById('select-user-link');
+                const list = document.getElementById('admin-users-list');
+                select.innerHTML = '';
+                list.innerHTML = '<h4 class="font-bold text-gray-700 mb-2">Usuarios en el sistema:</h4>';
+
+                snapshot.forEach(d => {
+                    const u = d.data();
+                    // Llenar select
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.innerText = u.email;
+                    select.appendChild(opt);
+
+                    // Llenar lista visual
+                    const item = document.createElement('div');
+                    item.className = "flex justify-between items-center p-2 bg-white border rounded text-sm";
+                    item.innerHTML = `<span><b>${u.email}</b> (${u.role})</span> <span class="text-blue-600">${u.links?.length || 0} links</span>`;
+                    list.appendChild(item);
+                });
+            });
         }
 
-        // FUNCIONES DE ADMINISTRADOR
-        function toggleAdminPanel() {
-            const panel = document.getElementById('admin-modal');
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        }
-
-        document.getElementById('admin-btn').onclick = toggleAdminPanel;
-
-        function saveUser() {
-            const name = document.getElementById('new-user-name').value;
-            const pass = document.getElementById('new-user-pass').value;
-            if(!name) return alert("Nombre requerido");
-
-            if (!db.users[name]) {
-                db.users[name] = { password: pass, role: "user", links: [] };
-            } else {
-                db.users[name].password = pass;
-            }
-            syncDB();
-            alert("Usuario guardado");
-        }
-
-        function addLink() {
-            const targetUser = document.getElementById('user-select').value;
+        // Agregar Link a Usuario seleccionado
+        document.getElementById('btn-add-link').onclick = async () => {
+            const uid = document.getElementById('select-user-link').value;
             const title = document.getElementById('link-title').value;
             const url = document.getElementById('link-url').value;
 
             if(!title || !url) return alert("Completa los datos");
 
-            db.users[targetUser].links.push({ title, url });
-            syncDB();
-            alert("Link agregado a " + targetUser);
-            if (currentUser === targetUser) renderTabs();
-        }
+            await updateDoc(doc(db, "users", uid), {
+                links: arrayUnion({ title, url })
+            });
+            alert("Pestaña agregada correctamente.");
+            document.getElementById('link-title').value = "";
+            document.getElementById('link-url').value = "";
+        };
 
-        function updateUserSelect() {
-            const select = document.getElementById('user-select');
-            select.innerHTML = '';
-            for (let user in db.users) {
-                const opt = document.createElement('option');
-                opt.value = user;
-                opt.innerText = user;
-                select.appendChild(opt);
-            }
-        }
-
-        // Inicializar si ya estaba logueado (opcional)
-        syncDB();
     </script>
 </body>
 </html>
