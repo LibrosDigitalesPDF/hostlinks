@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residencial Francia - Panel administrativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --navy-blue: #001f3f;
+            --tab-active: #ffffff;
+            --tab-inactive: #003366;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Barra Superior */
+        .navbar {
+            background-color: var(--navy-blue);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+            position: relative;
+            z-index: 100;
+        }
+
+        .logo {
+            height: 40px;
+            margin-right: 15px;
+        }
+
+        .brand-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 30px;
+            white-space: nowrap;
+        }
+
+        /* Sistema de Pestañas Solapadas */
+        .tabs-container {
+            display: flex;
+            align-items: flex-end;
+            height: 100%;
+            overflow-x: auto;
+        }
+
+        .tab {
+            background-color: var(--tab-inactive);
+            color: #ccc;
+            padding: 8px 20px;
+            margin-right: -10px; /* Solapado */
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            white-space: nowrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tab.active {
+            background-color: var(--tab-active);
+            color: var(--navy-blue);
+            z-index: 5;
+            font-weight: bold;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+
+        /* Contenido */
+        #main-frame {
+            width: 100%;
+            height: calc(100vh - 60px);
+            border: none;
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .admin-panel {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 200;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 350px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR -->
+    <nav class="navbar">
+        <img src="logo.png" alt="Logo" class="logo" onerror="this.src='https://via.placeholder.com/40?text=RF'">
+        <div class="brand-title">Residencial Francia | Panel administrativo</div>
+        
+        <div id="tabs" class="tabs-container">
+            <!-- Las pestañas se cargan aquí dinámicamente -->
+        </div>
+
+        <div class="ml-auto flex items-center">
+            <button id="admin-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm hidden">⚙️ Config</button>
+            <button onclick="logout()" class="ml-4 text-sm text-gray-300 hover:text-white">Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <!-- IFRAME DE CONTENIDO -->
+    <div id="content">
+        <iframe id="main-frame" src=""></iframe>
+    </div>
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-overlay">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-96">
+            <h2 class="text-2xl font-bold mb-4 text-center">Acceso Residencial Francia</h2>
+            <input type="text" id="username" placeholder="Usuario" class="w-full p-2 mb-3 border rounded">
+            <input type="password" id="password" placeholder="Contraseña" class="w-full p-2 mb-4 border rounded">
+            <button onclick="attemptLogin()" class="w-full bg-blue-900 text-white py-2 rounded font-bold">Entrar</button>
+            <p id="login-error" class="text-red-500 text-sm mt-2 hidden">Credenciales incorrectas</p>
+        </div>
+    </div>
+
+    <!-- PANEL ADMINISTRADOR (MODAL) -->
+    <div id="admin-modal" class="admin-panel">
+        <h3 class="text-xl font-bold mb-4 border-b pb-2">Configuración</h3>
+        
+        <div class="mb-6">
+            <h4 class="font-bold text-sm text-blue-800">Crear/Editar Usuario</h4>
+            <input type="text" id="new-user-name" placeholder="Nombre de usuario" class="w-full p-1 border mt-1 text-sm">
+            <input type="text" id="new-user-pass" placeholder="Contraseña" class="w-full p-1 border mt-1 text-sm">
+            <p class="text-xs text-gray-500 mt-1">* Si dejas pass vacío, entrará sin contraseña.</p>
+            <button onclick="saveUser()" class="bg-green-600 text-white px-4 py-1 rounded mt-2 text-sm w-full">Guardar Usuario</button>
+        </div>
+
+        <div class="mb-4">
+            <h4 class="font-bold text-sm text-blue-800">Asignar Link a Usuario</h4>
+            <select id="user-select" class="w-full p-1 border mt-1 text-sm"></select>
+            <input type="text" id="link-title" placeholder="Título de la pestaña" class="w-full p-1 border mt-1 text-sm">
+            <input type="text" id="link-url" placeholder="https://ejemplo.com" class="w-full p-1 border mt-1 text-sm">
+            <button onclick="addLink()" class="bg-blue-600 text-white px-4 py-1 rounded mt-2 text-sm w-full">Agregar Link</button>
+        </div>
+
+        <hr class="my-4">
+        <button onclick="toggleAdminPanel()" class="w-full bg-gray-500 text-white py-1 rounded">Cerrar</button>
+    </div>
+
+    <script>
+        // BASE DE DATOS INICIAL (Se guarda en el navegador del administrador)
+        let db = JSON.parse(localStorage.getItem('residencial_db')) || {
+            users: {
+                "admin": { password: "123", role: "admin", links: [] },
+                "usuario1": { password: "456", role: "user", links: [{ title: "Google", url: "https://www.bing.com" }] }
+            }
+        };
+
+        let currentUser = null;
+
+        // Función para guardar en LocalStorage
+        function syncDB() {
+            localStorage.setItem('residencial_db', JSON.stringify(db));
+            updateUserSelect();
+        }
+
+        // LOGIN
+        function attemptLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if (db.users[user]) {
+                // Verificar si requiere contraseña o si coincide
+                if (db.users[user].password === "" || db.users[user].password === pass) {
+                    currentUser = user;
+                    loginSuccess();
+                } else {
+                    showError();
+                }
+            } else {
+                showError();
+            }
+        }
+
+        function loginSuccess() {
+            document.getElementById('login-overlay').style.display = 'none';
+            if (db.users[currentUser].role === 'admin') {
+                document.getElementById('admin-btn').classList.remove('hidden');
+            }
+            renderTabs();
+            updateUserSelect();
+        }
+
+        function showError() {
+            const err = document.getElementById('login-error');
+            err.classList.remove('hidden');
+            setTimeout(() => err.classList.add('hidden'), 3000);
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        // RENDERIZADO DE PESTAÑAS
+        function renderTabs() {
+            const container = document.getElementById('tabs');
+            container.innerHTML = '';
+            
+            const userLinks = db.users[currentUser].links || [];
+            
+            userLinks.forEach((link, index) => {
+                const tab = document.createElement('div');
+                tab.className = `tab ${index === 0 ? 'active' : ''}`;
+                tab.innerText = link.title;
+                tab.onclick = () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    loadPage(link.url);
+                };
+                container.appendChild(tab);
+            });
+
+            if (userLinks.length > 0) loadPage(userLinks[0].url);
+        }
+
+        function loadPage(url) {
+            // Nota: Algunos sitios bloquean ser mostrados en iframes por seguridad (X-Frame-Options)
+            document.getElementById('main-frame').src = url;
+        }
+
+        // FUNCIONES DE ADMINISTRADOR
+        function toggleAdminPanel() {
+            const panel = document.getElementById('admin-modal');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        document.getElementById('admin-btn').onclick = toggleAdminPanel;
+
+        function saveUser() {
+            const name = document.getElementById('new-user-name').value;
+            const pass = document.getElementById('new-user-pass').value;
+            if(!name) return alert("Nombre requerido");
+
+            if (!db.users[name]) {
+                db.users[name] = { password: pass, role: "user", links: [] };
+            } else {
+                db.users[name].password = pass;
+            }
+            syncDB();
+            alert("Usuario guardado");
+        }
+
+        function addLink() {
+            const targetUser = document.getElementById('user-select').value;
+            const title = document.getElementById('link-title').value;
+            const url = document.getElementById('link-url').value;
+
+            if(!title || !url) return alert("Completa los datos");
+
+            db.users[targetUser].links.push({ title, url });
+            syncDB();
+            alert("Link agregado a " + targetUser);
+            if (currentUser === targetUser) renderTabs();
+        }
+
+        function updateUserSelect() {
+            const select = document.getElementById('user-select');
+            select.innerHTML = '';
+            for (let user in db.users) {
+                const opt = document.createElement('option');
+                opt.value = user;
+                opt.innerText = user;
+                select.appendChild(opt);
+            }
+        }
+
+        // Inicializar si ya estaba logueado (opcional)
+        syncDB();
+    </script>
+</body>
+</html>
